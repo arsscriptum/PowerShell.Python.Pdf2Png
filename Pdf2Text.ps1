@@ -30,7 +30,10 @@ $Res=Set-EnvironmentVariable -Name "PATH" -Value $p -Scope Session
  $Res=Set-EnvironmentVariable -Name "TESSDATA_PREFIX" -Value $t -Scope Session
  $Res=Set-EnvironmentVariable -Name "PATH" -Value $p -Scope Session
 
+
 $OutLog = "$PSScriptRoot\Out.log"
+Out-File $OutLog -Encoding Unicode
+
 $PyExe = (Get-Command 'py').Source
 $ScriptPath = "$PSScriptRoot\Run.py"
 $Path = $Path.Replace('\','\\')
@@ -58,16 +61,17 @@ if __name__ == "__main__":
 Write-Verbose "Writing $ScriptPath"
 Set-Content $ScriptPath -Value $PythonCode
 Write-Verbose "Running $ScriptPath"
-&"$PyExe" $ScriptPath *> $OutLog 
+&"$PyExe" $ScriptPath | Out-File $OutLog -Encoding Unicode
+
 Write-Verbose "Deleting $ScriptPath"
 del $ScriptPath
 
 Write-Verbose "DOne" 
-$ListData = get-content $OutLog | select -Skip 2 | ConvertFrom-Json
-$TextData = get-content $OutLog | select -Skip 2
+$ListData = get-content $OutLog | ConvertFrom-Json
+$TextData = get-content $OutLog 
 del $OutLog
 if($Destination){
-   Set-Content $Destination -Value $TextData 
+   Set-Content $Destination -Value $TextData  -Encoding Unicode
 }elseif($AsList){
    $ListData
 }else{
